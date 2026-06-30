@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>삐삐 · Pager — 누군가에게 닿는 소리</title>
+<meta name="description" content="주파수를 맞추고 짧은 메시지를 호출하세요. 하루 1,000개 한정. 누군가에게 닿는 소리. OnlyOne." />
+<meta name="theme-color" content="#FAFAF8" />
+
+<!-- ===== Google Analytics 4 + Consent Mode v2 (default deny) ===== -->
+<!-- 배포 전 G-XXXXXXXXXX 를 실제 측정 ID로 교체 (이 파일 내 2곳) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('consent', 'default', {
+    'ad_storage': 'denied',
+    'ad_user_data': 'denied',
+    'ad_personalization': 'denied',
+    'analytics_storage': 'denied',
+    'wait_for_update': 500
+  });
+  gtag('js', new Date());
+  gtag('config', 'G-XXXXXXXXXX', { 'anonymize_ip': true });
+</script>
+
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+<style>
+  :root{
+    --ink:#3D4248;
+    --paper:#FAFAF8;
+    --line:rgba(61,66,72,.10);
+    --muted:#8b9097;
+    --device-a:#33373d;
+    --device-b:#23262b;
+    --lcd-bg:#aebd62;
+    --lcd-ink:#1c2a0c;
+    --signal:#7fd6a3;
+    --warn:#e0a23a;
+    --full:#d98a8a;
+    --radius:20px;
+    --shadow:0 10px 40px rgba(20,23,28,.10);
+    --mono:"SFMono-Regular",ui-monospace,"Menlo","Consolas",monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:"Pretendard Variable",Pretendard,-apple-system,system-ui,sans-serif;
+    color:var(--ink); background:var(--paper);
+    -webkit-font-smoothing:antialiased; line-height:1.5; min-height:100dvh;
+  }
+  a{color:inherit}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  @keyframes blink{50%{opacity:0}}
+  @keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  @keyframes buzz{10%,30%,50%,70%{transform:translateX(-3px)}20%,40%,60%,80%{transform:translateX(3px)}0%,100%{transform:none}}
+
+  .wrap{max-width:540px; margin:0 auto; padding:0 20px 64px}
+  header{display:flex; align-items:center; justify-content:space-between; padding:18px 20px; max-width:540px; margin:0 auto}
+  .brand{display:flex; align-items:center; gap:9px; font-weight:700; font-size:15px; letter-spacing:-.01em}
+  .brand svg{display:block}
+  .lang{border:1px solid var(--line); border-radius:999px; padding:6px 13px; font-size:12.5px; font-weight:600; color:var(--muted); background:#fff; transition:color .2s, border-color .2s}
+  .lang:hover{color:var(--ink); border-color:rgba(61,66,72,.25)}
+
+  .lead{text-align:center; margin:10px 0 24px}
+  .lead h1{font-size:23px; font-weight:700; letter-spacing:-.02em}
+  .lead p{color:var(--muted); font-size:14px; margin-top:7px; letter-spacing:.04em}
+
+  /* ===== Device ===== */
+  .device{width:286px; margin:0 auto 24px; padding:18px 18px 22px; border-radius:30px;
+    background:linear-gradient(170deg,var(--device-a),var(--device-b));
+    box-shadow:0 24px 50px rgba(20,23,28,.30), inset 0 1px 0 rgba(255,255,255,.10), inset 0 -2px 6px rgba(0,0,0,.4);
+    position:relative}
+  .device::before{content:""; position:absolute; inset:6px; border-radius:24px; border:1px solid rgba(255,255,255,.05); pointer-events:none}
+  .dev-top{display:flex; align-items:center; justify-content:space-between; padding:0 4px 12px}
+  .grille{display:flex; gap:4px}
+  .grille i{width:4px; height:4px; border-radius:50%; background:rgba(255,255,255,.18)}
+  .signal{display:flex; align-items:flex-end; gap:3px; height:14px}
+  .signal i{width:3px; background:var(--signal); border-radius:1px; opacity:.85}
+  .signal i:nth-child(1){height:5px}.signal i:nth-child(2){height:8px}.signal i:nth-child(3){height:11px}.signal i:nth-child(4){height:14px; opacity:.3}
+  .freq-label{color:#aeb4bb; font-size:11px; font-weight:600; letter-spacing:.08em; font-family:var(--mono)}
+  .lcd{border-radius:12px; background:linear-gradient(180deg,#b8c66c,#9fae54); padding:16px 16px 14px; min-height:108px; position:relative; overflow:hidden;
+    box-shadow:inset 0 2px 5px rgba(0,0,0,.22), 0 0 22px rgba(127,214,163,.16); font-family:var(--mono); color:var(--lcd-ink)}
+  .lcd::after{content:""; position:absolute; inset:0; pointer-events:none; opacity:.5;
+    background-image:radial-gradient(rgba(28,42,12,.16) .6px, transparent .7px), repeating-linear-gradient(0deg, rgba(28,42,12,.05) 0 2px, transparent 2px 4px);
+    background-size:4px 4px, 100% 4px}
+  .lcd-from{font-size:11px; font-weight:700; letter-spacing:.06em; opacity:.7; text-transform:uppercase}
+  .lcd-msg{font-size:19px; font-weight:700; line-height:1.35; margin-top:6px; word-break:break-word; min-height:26px; text-shadow:0 0 1px rgba(28,42,12,.4)}
+  .lcd-msg .cur{display:inline-block; width:.5ch; height:1em; background:var(--lcd-ink); vertical-align:-2px; margin-left:1px; animation:blink 1.1s step-end infinite}
+  .device.buzz{animation:buzz .5s ease}
+  .dev-btn{display:flex; justify-content:center; margin-top:14px}
+  .dev-btn b{width:46px; height:46px; border-radius:50%; background:linear-gradient(180deg,#43484f,#2a2d33); box-shadow:inset 0 1px 0 rgba(255,255,255,.12), 0 2px 4px rgba(0,0,0,.4); display:grid; place-items:center}
+  .dev-btn b::after{content:""; width:14px; height:14px; border-radius:50%; background:var(--signal); opacity:.55; box-shadow:0 0 8px var(--signal)}
+
+  /* ===== Controls ===== */
+  .panel{background:#fff; border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px}
+  .field{margin-bottom:14px}
+  .field:last-child{margin-bottom:0}
+  .field label{display:block; font-size:12.5px; font-weight:600; color:var(--muted); margin-bottom:8px}
+  .freqs{display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; -webkit-overflow-scrolling:touch; scrollbar-width:none}
+  .freqs::-webkit-scrollbar{display:none}
+  .freqs button{flex:0 0 auto; min-width:42px; height:42px; border-radius:12px; border:1px solid var(--line); background:#fafafa; font-weight:700; font-size:14px; color:var(--ink); transition:.18s}
+  .freqs button.on{background:var(--ink); color:#fff; border-color:var(--ink)}
+  input,textarea{width:100%; font-family:inherit; font-size:15px; color:var(--ink); border:1px solid var(--line); border-radius:12px; padding:12px 13px; background:#fafafa; transition:border-color .18s, background .18s}
+  input:focus,textarea:focus{outline:none; border-color:rgba(127,214,163,.8); background:#fff}
+  textarea{resize:none; line-height:1.5}
+  .count{text-align:right; font-size:11.5px; color:var(--muted); margin-top:5px; font-family:var(--mono)}
+  .codes{display:flex; gap:7px; flex-wrap:wrap}
+  .codes button{display:flex; align-items:baseline; gap:5px; padding:7px 11px; border-radius:999px; border:1px solid var(--line); background:#fafafa; font-family:var(--mono); font-weight:700; font-size:13px; transition:.18s}
+  .codes button:hover{border-color:rgba(127,214,163,.7); background:#fff}
+  .codes button small{font-family:inherit; font-weight:500; font-size:11px; color:var(--muted)}
+  .send{width:100%; margin-top:4px; padding:14px; border-radius:14px; background:var(--ink); color:#fff; font-size:15.5px; font-weight:700; transition:transform .15s, opacity .2s}
+  .send:hover{transform:translateY(-1px)}
+  .send:disabled{opacity:.45; transform:none; cursor:default}
+
+  /* ===== Daily quota (한정판) ===== */
+  .quota{max-width:300px; margin:28px auto 2px; text-align:center}
+  .quota-row{display:flex; align-items:baseline; justify-content:center; gap:9px}
+  .quota-label{font-size:13px; font-weight:700}
+  .quota-num{font-family:var(--mono); font-size:13.5px; color:var(--muted); font-variant-numeric:tabular-nums}
+  .quota-num b{color:var(--ink); font-size:15px}
+  .quota-track{height:6px; border-radius:999px; background:rgba(61,66,72,.08); margin:11px auto 0; max-width:240px; overflow:hidden}
+  .quota-fill{height:100%; width:0; border-radius:999px; background:var(--signal); transition:width .6s cubic-bezier(.22,1,.36,1)}
+  .quota.warn .quota-fill{background:var(--warn)}
+  .quota.full .quota-fill{background:var(--full)}
+  .quota-cap{font-size:11.5px; color:var(--muted); margin-top:9px; letter-spacing:.02em}
+  .quota.full .quota-cap{color:#c46a6a; font-weight:600}
+
+  /* ===== Feed ===== */
+  .feed-head{display:flex; align-items:baseline; justify-content:space-between; margin:26px 4px 14px}
+  .feed-head h2{font-size:15px; font-weight:700}
+  .feed-head span{font-size:12px; color:var(--muted); font-family:var(--mono)}
+  .feed{display:flex; flex-direction:column; gap:10px}
+  .page-card{display:flex; gap:12px; padding:14px 16px; background:#fff; border:1px solid var(--line); border-radius:16px; animation:pop .35s ease}
+  .dot{flex:0 0 auto; width:8px; height:8px; border-radius:50%; background:var(--signal); margin-top:7px; box-shadow:0 0 6px var(--signal)}
+  .pc-body{flex:1; min-width:0}
+  .pc-top{display:flex; align-items:baseline; justify-content:space-between; gap:10px}
+  .pc-name{font-weight:700; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .pc-time{font-size:11.5px; color:var(--muted); font-family:var(--mono); flex:0 0 auto}
+  .pc-msg{font-size:15px; margin-top:3px; word-break:break-word}
+  .empty{text-align:center; color:var(--muted); font-size:14px; padding:34px 10px; line-height:1.7}
+
+  /* ===== Footer ===== */
+  footer{max-width:540px; margin:48px auto 0; padding:26px 20px 40px; border-top:1px solid var(--line); text-align:center; color:var(--muted); font-size:12.5px; line-height:1.9}
+  footer .fbrand{display:inline-flex; align-items:center; gap:7px; font-weight:700; color:var(--ink); font-size:13px; margin-bottom:8px}
+  footer a{text-decoration:none; border-bottom:1px solid rgba(61,66,72,.2)}
+  .hub{display:inline-block; margin-top:10px; padding:5px 12px; border:1px solid var(--line); border-radius:999px; font-size:12px; text-decoration:none}
+
+  /* ===== Consent ===== */
+  #consent{position:fixed; left:50%; bottom:18px; transform:translateX(-50%) translateY(140%); width:calc(100% - 32px); max-width:440px; z-index:70;
+    background:rgba(22,24,27,.96); color:#e7eaed; border-radius:18px; padding:16px 18px; box-shadow:0 16px 50px rgba(0,0,0,.4); backdrop-filter:blur(10px); transition:transform .45s cubic-bezier(.22,1,.36,1)}
+  #consent.show{transform:translateX(-50%) translateY(0)}
+  #consent p{font-size:13px; line-height:1.6; color:#c4c9cf}
+  #consent .crow{display:flex; gap:8px; margin-top:13px}
+  #consent button{flex:1; padding:10px; border-radius:11px; font-size:13.5px; font-weight:600}
+  #consent .ok{background:var(--signal); color:#10251a}
+  #consent .no{background:rgba(255,255,255,.10); color:#e7eaed}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important; transition:none !important}
+    .lcd-msg .cur{animation:blink 1.1s step-end infinite !important}
+  }
+  @media (max-width:380px){ .device{width:100%} }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="8.5" r="5.4" stroke="#3D4248" stroke-width="2.6"/>
+      <rect x="10.6" y="14.4" width="2.8" height="6.6" rx="1.4" fill="#3D4248"/>
+    </svg>
+    <span>OnlyOne</span>
+  </div>
+  <button class="lang" id="langBtn">EN</button>
+</header>
+
+<main class="wrap">
+  <div class="lead">
+    <h1 data-i="title">삐삐</h1>
+    <p data-i="tag">누군가에게 닿는 소리</p>
+  </div>
+
+  <!-- DEVICE -->
+  <div class="device" id="device">
+    <div class="dev-top">
+      <div class="grille"><i></i><i></i><i></i><i></i></div>
+      <div class="signal"><i></i><i></i><i></i><i></i></div>
+      <div class="freq-label" id="devFreq">FREQ 01</div>
+    </div>
+    <div class="lcd">
+      <div class="lcd-from" id="lcdFrom" data-i="lcdReady">READY</div>
+      <div class="lcd-msg" id="lcdMsg">자니<span class="cur"></span></div>
+    </div>
+    <div class="dev-btn"><b></b></div>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="panel">
+    <div class="field">
+      <label data-i="lblFreq">주파수</label>
+      <div class="freqs" id="freqs"></div>
+    </div>
+    <div class="field">
+      <label data-i="lblFrom">보내는 사람</label>
+      <input id="name" maxlength="12" data-ph="from" placeholder="이름 (선택)" />
+    </div>
+    <div class="field">
+      <label data-i="lblMsg">메시지</label>
+      <textarea id="msg" rows="2" maxlength="50" data-ph="msg" placeholder="짧게 한마디…"></textarea>
+      <div class="count"><span id="cnt">0</span>/50</div>
+    </div>
+    <div class="field">
+      <label data-i="lblCodes">삐삐 암호</label>
+      <div class="codes" id="codes"></div>
+    </div>
+    <button class="send" id="send" data-i="send">호출하기</button>
+  </div>
+
+  <!-- DAILY QUOTA -->
+  <div class="quota" id="quota">
+    <div class="quota-row">
+      <span class="quota-label" data-i="quotaLabel">오늘의 호출</span>
+      <span class="quota-num"><b id="dayCount">0</b> / <span id="quotaTotal">1,000</span></span>
+    </div>
+    <div class="quota-track"><div class="quota-fill" id="quotaFill"></div></div>
+    <div class="quota-cap" id="quotaCap" data-i="quotaCap">하루 1,000개 한정</div>
+  </div>
+
+  <!-- FEED -->
+  <div class="feed-head">
+    <h2 data-i="incoming">받은 호출</h2>
+    <span id="feedFreq">FREQ 01</span>
+  </div>
+  <div class="feed" id="feed"></div>
+</main>
+
+<footer>
+  <div class="fbrand">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="8.5" r="5.4" stroke="#3D4248" stroke-width="2.6"/>
+      <rect x="10.6" y="14.4" width="2.8" height="6.6" rx="1.4" fill="#3D4248"/>
+    </svg>
+    OnlyOne
+  </div>
+  <div data-i="slogan">For a Happy Day</div>
+  <div><span data-i="contact">문의</span> · <a href="mailto:onlyonecorpceo@gmail.com">onlyonecorpceo@gmail.com</a></div>
+  <a class="hub" href="https://main.onlyonecorpceo.workers.dev" target="_blank" rel="noopener" data-i="hub">OnlyOne 더 보기</a>
+</footer>
+
+<!-- CONSENT -->
+<div id="consent">
+  <p id="consentText">방문 분석을 위해 쿠키를 사용해요. 동의하시겠어요?</p>
+  <div class="crow">
+    <button class="no" id="cNo" data-i="decline">거부</button>
+    <button class="ok" id="cYes" data-i="accept">동의</button>
+  </div>
+</div>
+
+<script>
+/* ===================== config ===================== */
+var SERVER_COUNT = 10;            // 서버(주파수) 개수 — worker.js 값과 동일하게
+var MAX_MSG = 50;
+var POLL_MS = 6000;
+
+/* 옛날 삐삐 암호 (탭하면 메시지에 자동 입력) */
+var CODES = [
+  {n:"1004",    ko:"천사",     en:"angel"},
+  {n:"486",     ko:"사랑해",   en:"love you"},
+  {n:"8282",    ko:"빨리빨리", en:"hurry"},
+  {n:"1010235", ko:"열렬히",   en:"yearning"}
+];
+
+/* ===================== i18n ===================== */
+var I18N = {
+  ko:{
+    title:"삐삐", tag:"누군가에게 닿는 소리",
+    lblFreq:"주파수", lblFrom:"보내는 사람", lblMsg:"메시지", lblCodes:"삐삐 암호",
+    from:"이름 (선택)", msg:"짧게 한마디…", send:"호출하기",
+    incoming:"받은 호출", lcdReady:"READY",
+    quotaLabel:"오늘의 호출", quotaCap:"하루 1,000개 한정",
+    soldOut:"오늘의 호출이 모두 닿았어요. 내일 다시 열려요.", quotaBtn:"오늘 마감",
+    slogan:"For a Happy Day", contact:"문의", hub:"OnlyOne 더 보기",
+    empty:"아직 아무 소리도 없어요.<br>먼저 호출해보세요.",
+    sent:"전송 완료", sending:"전송 중…",
+    decline:"거부", accept:"동의",
+    consent:"방문 분석을 위해 쿠키를 사용해요. 동의하시겠어요?",
+    now:"방금", min:"분 전", hour:"시간 전", day:"일 전", anon:"익명"
+  },
+  en:{
+    title:"Pager", tag:"A sound that reaches someone",
+    lblFreq:"Frequency", lblFrom:"From", lblMsg:"Message", lblCodes:"Pager codes",
+    from:"Name (optional)", msg:"Say it short…", send:"Page",
+    incoming:"Incoming", lcdReady:"READY",
+    quotaLabel:"Today's pages", quotaCap:"1,000 a day, limited",
+    soldOut:"Today's pages are all used. Back tomorrow.", quotaBtn:"Sold out",
+    slogan:"For a Happy Day", contact:"Contact", hub:"More from OnlyOne",
+    empty:"No pages yet.<br>Be the first to reach out.",
+    sent:"Sent", sending:"Sending…",
+    decline:"Decline", accept:"Accept",
+    consent:"We use cookies to measure visits. Is that okay?",
+    now:"just now", min:"m ago", hour:"h ago", day:"d ago", anon:"Anonymous"
+  }
+};
+var lang = localStorage.getItem("oo_lang") || "ko";
+
+/* ===================== state ===================== */
+var server = parseInt(localStorage.getItem("oo_freq") || "1", 10);
+if(!(server>=1 && server<=SERVER_COUNT)) server = 1;
+var lastFeed = [];
+var lastDay = 0, lastLimit = 1000, soldOut = false;
+
+/* ===================== helpers ===================== */
+function $(s){return document.querySelector(s)}
+function pad(n){return (n<10?"0":"")+n}
+function t(k){return I18N[lang][k]}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function ago(ts){
+  var m=Math.floor((Date.now()-ts)/60000);
+  if(m<1) return t("now");
+  if(m<60) return m+t("min");
+  var h=Math.floor(m/60); if(h<24) return h+t("hour");
+  return Math.floor(h/24)+t("day");
+}
+
+/* ===================== i18n render ===================== */
+function applyLang(){
+  document.documentElement.lang = lang;
+  $("#langBtn").textContent = lang==="ko" ? "EN" : "KO";
+  document.querySelectorAll("[data-i]").forEach(function(el){
+    var k=el.getAttribute("data-i");
+    if(k==="empty"||k==="quotaCap") return;       // 동적 처리
+    if(I18N[lang][k]!==undefined) el.textContent = I18N[lang][k];
+  });
+  document.querySelectorAll("[data-ph]").forEach(function(el){ el.placeholder = I18N[lang][el.getAttribute("data-ph")]; });
+  $("#consentText").textContent = t("consent");
+  buildCodes();
+  renderFeed(lastFeed);
+  updateQuota(lastDay, lastLimit);
+  updateLcd();
+}
+
+/* ===================== device LCD ===================== */
+function updateLcd(){
+  var v = $("#msg").value.trim(), fromEl=$("#lcdFrom"), msgEl=$("#lcdMsg");
+  if(v){
+    var nm = $("#name").value.trim();
+    fromEl.textContent = nm ? nm : "ME";
+    msgEl.innerHTML = escapeHtml(v)+'<span class="cur"></span>';
+  } else if(lastFeed.length){
+    fromEl.textContent = lastFeed[0].n;
+    msgEl.innerHTML = escapeHtml(lastFeed[0].t);
+  } else {
+    fromEl.textContent = t("lcdReady");
+    msgEl.innerHTML = (lang==="ko"?"자니":"you up?")+'<span class="cur"></span>';
+  }
+}
+
+/* ===================== build UI ===================== */
+function buildFreqs(){
+  var box=$("#freqs"); box.innerHTML="";
+  for(var i=1;i<=SERVER_COUNT;i++){
+    (function(n){
+      var b=document.createElement("button");
+      b.textContent=n; if(n===server) b.className="on";
+      b.onclick=function(){ setServer(n); };
+      box.appendChild(b);
+    })(i);
+  }
+}
+function buildCodes(){
+  var box=$("#codes"); box.innerHTML="";
+  CODES.forEach(function(c){
+    var b=document.createElement("button");
+    b.innerHTML=c.n+' <small>'+(lang==="ko"?c.ko:c.en)+'</small>';
+    b.onclick=function(){ $("#msg").value=c.n; onMsgInput(); $("#msg").focus(); };
+    box.appendChild(b);
+  });
+}
+function setServer(n){
+  server=n; localStorage.setItem("oo_freq",n);
+  document.querySelectorAll("#freqs button").forEach(function(b,i){ b.className=(i+1===n)?"on":""; });
+  $("#devFreq").textContent="FREQ "+pad(n);
+  $("#feedFreq").textContent="FREQ "+pad(n);
+  loadFeed();
+}
+
+/* ===================== quota ===================== */
+function updateQuota(day, limit){
+  lastDay=day; lastLimit=limit;
+  var q=$("#quota"), ratio = limit ? day/limit : 0;
+  $("#dayCount").textContent = day.toLocaleString();
+  $("#quotaTotal").textContent = limit.toLocaleString();
+  $("#quotaFill").style.width = Math.min(100, ratio*100)+"%";
+  q.classList.toggle("warn", ratio>=0.9 && ratio<1);
+  soldOut = day>=limit;
+  q.classList.toggle("full", soldOut);
+  $("#quotaCap").textContent = soldOut ? t("soldOut") : t("quotaCap");
+  refreshSend();
+}
+
+/* ===================== send button state ===================== */
+function refreshSend(){
+  var btn=$("#send");
+  if(soldOut){ btn.disabled=true; btn.textContent=t("quotaBtn"); }
+  else { btn.textContent=t("send"); btn.disabled = $("#msg").value.trim().length===0; }
+}
+function onMsgInput(){ $("#cnt").textContent=$("#msg").value.length; updateLcd(); refreshSend(); }
+
+/* ===================== feed ===================== */
+function renderFeed(list){
+  var box=$("#feed");
+  if(!list || !list.length){ box.innerHTML='<div class="empty">'+t("empty")+'</div>'; return; }
+  box.innerHTML="";
+  list.forEach(function(m){
+    var card=document.createElement("div"); card.className="page-card";
+    card.innerHTML='<div class="dot"></div><div class="pc-body"><div class="pc-top">'+
+      '<span class="pc-name">'+escapeHtml(m.n)+'</span><span class="pc-time">'+ago(m.ts)+'</span></div>'+
+      '<div class="pc-msg">'+escapeHtml(m.t)+'</div></div>';
+    box.appendChild(card);
+  });
+}
+function loadFeed(){
+  fetch("/api/feed?s="+server).then(function(r){return r.json()}).then(function(d){
+    lastFeed = d.messages||[];
+    renderFeed(lastFeed);
+    updateQuota(d.dayCount||0, d.limit||1000);
+    if(!$("#msg").value.trim()) updateLcd();
+  }).catch(function(){});
+}
+
+/* ===================== send ===================== */
+function send(){
+  if(soldOut) return;
+  var text=$("#msg").value.trim(); if(!text) return;
+  var btn=$("#send"); btn.disabled=true; btn.textContent=t("sending");
+  var payload={ server:server, name:$("#name").value.trim()||t("anon"), text:text };
+  fetch("/api/page",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)})
+    .then(function(r){return r.json()})
+    .then(function(d){
+      if(d.error==="quota"){ updateQuota(d.dayCount, d.limit); return; }
+      if(d.ok){
+        $("#msg").value=""; $("#cnt").textContent="0";
+        var dev=$("#device"); dev.classList.add("buzz"); setTimeout(function(){dev.classList.remove("buzz")},520);
+        // 낙관적 반영: 보낸 호출 바로 위에 표시
+        lastFeed.unshift(d.item); renderFeed(lastFeed);
+        updateQuota(d.dayCount, d.limit);
+        btn.textContent=t("sent");
+        if(typeof gtag==="function") gtag("event","page_sent",{freq:server});
+        setTimeout(function(){ refreshSend(); }, 900);
+        loadFeed();
+      } else { refreshSend(); }
+    })
+    .catch(function(){ refreshSend(); });
+}
+
+/* ===================== consent (GA4 v2) ===================== */
+function isEEA(){ try{ return (Intl.DateTimeFormat().resolvedOptions().timeZone||"").indexOf("Europe/")===0; }catch(e){ return false; } }
+function grant(){ if(typeof gtag==="function") gtag("consent","update",{ad_storage:"granted",ad_user_data:"granted",ad_personalization:"granted",analytics_storage:"granted"}); }
+function initConsent(){
+  var saved=localStorage.getItem("oo_consent");
+  if(saved==="granted"){ grant(); return; }
+  if(saved==="denied"){ return; }
+  if(isEEA()){ setTimeout(function(){ $("#consent").classList.add("show"); }, 900); }
+  else { grant(); localStorage.setItem("oo_consent","granted"); }
+}
+$("#cYes").onclick=function(){ grant(); localStorage.setItem("oo_consent","granted"); $("#consent").classList.remove("show"); };
+$("#cNo").onclick =function(){ localStorage.setItem("oo_consent","denied"); $("#consent").classList.remove("show"); };
+
+/* ===================== wire up ===================== */
+$("#langBtn").onclick=function(){ lang = lang==="ko"?"en":"ko"; localStorage.setItem("oo_lang",lang); applyLang(); };
+$("#msg").addEventListener("input", onMsgInput);
+$("#name").addEventListener("input", updateLcd);
+$("#send").addEventListener("click", send);
+$("#msg").addEventListener("keydown", function(e){ if((e.metaKey||e.ctrlKey)&&e.key==="Enter") send(); });
+
+buildFreqs();
+$("#devFreq").textContent="FREQ "+pad(server);
+$("#feedFreq").textContent="FREQ "+pad(server);
+applyLang();
+onMsgInput();
+loadFeed();
+setInterval(loadFeed, POLL_MS);
+initConsent();
+</script>
+</body>
+</html>

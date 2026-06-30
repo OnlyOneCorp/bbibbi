@@ -1,0 +1,14 @@
+name = "pager"
+main = "worker.js"
+compatibility_date = "2025-06-01"
+
+# 정적 파일(index.html)을 ASSETS 바인딩으로 서빙
+[assets]
+directory = "./public"
+binding = "ASSETS"
+
+# KV: 대시보드에서 네임스페이스 만든 뒤 id 채우기
+#   wrangler kv namespace create PAGER_KV
+[[kv_namespaces]]
+binding = "PAGER_KV"
+id = "여기에_KV_네임스페이스_ID"
