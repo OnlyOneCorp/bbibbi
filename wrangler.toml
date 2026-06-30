@@ -11,4 +11,4 @@ binding = "ASSETS"
 #   wrangler kv namespace create PAGER_KV
 [[kv_namespaces]]
 binding = "PAGER_KV"
-id = "여기에_KV_네임스페이스_ID"
+id = "e2c625216d474421a38685acd3bf16d3"
